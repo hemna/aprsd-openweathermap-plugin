@@ -1,6 +1,5 @@
 from oslo_config import cfg
 
-
 plugin_group = cfg.OptGroup(
     name="aprsd_openweathermap_plugin",
     title="APRSD Slack Plugin settings",
@@ -11,6 +10,15 @@ plugin_opts = [
         "enabled",
         default=False,
         help="Enable the plugin?",
+    ),
+    cfg.StrOpt(
+        "apiKey",
+        help="OpenWeatherMap api key. "
+        "Some plugins use the OpenWeatherMap API fetch "
+        "location and weather information. "
+        "To use this plugin you need to get an openweathermap"
+        "account and apikey."
+        "https://home.openweathermap.org/api_keys",
     ),
 ]
 
