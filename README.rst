@@ -87,12 +87,6 @@ Add the following to your APRSD configuration file (typically ``aprsd.conf``):
    enabled = True
    apiKey = YOUR_OPENWEATHERMAP_API_KEY_HERE
 
-   [aprs_fi]
-   apiKey = YOUR_APRS_FI_API_KEY_HERE
-
-You can get an aprs.fi API key from https://aprs.fi/account/
-
-
 Usage
 -----
 
