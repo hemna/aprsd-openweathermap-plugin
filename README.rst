@@ -36,13 +36,21 @@ APRSD Plugin for OpenWeatherMap APIs
 Features
 --------
 
-* TODO
+This plugin provides two APRSD plugins that use the OpenWeatherMap API:
+
+* **WeatherPlugin** - Returns current weather conditions based on GPS beacon location
+* **TimePlugin** - Returns current time in the timezone of the GPS beacon location
+
+Both plugins use aprs.fi to look up the GPS coordinates of APRS stations, then use OpenWeatherMap
+to fetch weather and timezone information.
 
 
 Requirements
 ------------
 
-* TODO
+* APRSD server (version 4.2.0 or higher)
+* OpenWeatherMap API key (free tier available)
+* aprs.fi API key (for location lookup)
 
 
 Installation
@@ -55,10 +63,127 @@ You can install *APRSD Plugin for OpenWeatherMap APIs* via pip_ from PyPI_:
    $ pip install aprsd-openweathermap-plugin
 
 
+Configuration
+-------------
+
+Getting an OpenWeatherMap API Key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Visit https://home.openweathermap.org/users/sign_up to create a free account
+2. Once logged in, navigate to https://home.openweathermap.org/api_keys
+3. Generate a new API key (or use the default one provided)
+4. The free tier includes 1,000 API calls per day, which is sufficient for most use cases
+
+Note: It may take a few minutes for a newly created API key to become active.
+
+Configuring the Plugin
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Add the following to your APRSD configuration file (typically ``aprsd.conf``):
+
+.. code:: ini
+
+   [aprsd_openweathermap_plugin]
+   enabled = True
+   apiKey = YOUR_OPENWEATHERMAP_API_KEY_HERE
+
+   [aprs_fi]
+   apiKey = YOUR_APRS_FI_API_KEY_HERE
+
+You can get an aprs.fi API key from https://aprs.fi/account/
+
+
 Usage
 -----
 
-Please see the `Command-line Reference <Usage_>`_ for details.
+Weather Plugin
+~~~~~~~~~~~~~~~
+
+The WeatherPlugin provides current weather conditions at the location of an APRS station's GPS beacon.
+
+**Command Format:**
+* ``w`` or ``weather`` - Get weather at your own location (based on your callsign's last GPS beacon)
+* ``w CALLSIGN`` or ``weather CALLSIGN`` - Get weather at the specified callsign's location
+
+**Example Usage:**
+
+Send a message to your APRSD server:
+::
+
+   weather
+
+Response:
+::
+
+   clear sky 20.5C/15.2C Wind 10@180 65%
+
+Or query weather for a specific station:
+::
+
+   weather N0CALL
+
+Response:
+::
+
+   partly cloudy 22.0C/18.0C Wind 15@270G25 70%
+
+The response includes:
+* Weather description (e.g., "clear sky", "partly cloudy")
+* Temperature and dew point in Celsius or Fahrenheit (based on configured units)
+* Wind speed, direction, and optional gust
+* Humidity percentage
+
+Time Plugin
+~~~~~~~~~~~
+
+The TimePlugin provides the current time in the timezone of an APRS station's GPS beacon location.
+
+**Command Format:**
+* ``t`` or ``time`` - Get time at your own location
+* ``t CALLSIGN`` or ``time CALLSIGN`` - Get time at the specified callsign's location
+
+**Example Usage:**
+
+Send a message to your APRSD server:
+::
+
+   time
+
+Response:
+::
+
+   2024-01-15 14:30:00 PST
+
+Or query time for a specific station:
+::
+
+   time N0CALL
+
+Response:
+::
+
+   2024-01-15 16:30:00 EST
+
+The plugin automatically determines the timezone based on the GPS coordinates and returns
+the local time. If OpenWeatherMap API is unavailable, it defaults to UTC time.
+
+
+How It Works
+------------
+
+Both plugins follow a similar workflow:
+
+1. Extract the callsign from the message (or use the sender's callsign if not specified)
+2. Query aprs.fi API to get the GPS coordinates (latitude/longitude) of the callsign's last beacon
+3. Use the GPS coordinates to query OpenWeatherMap API for:
+   * **WeatherPlugin**: Current weather conditions
+   * **TimePlugin**: Timezone information
+4. Format and return the results
+
+The plugins require both APIs to be functional:
+* If aprs.fi lookup fails, the plugin returns "Failed to fetch location"
+* If OpenWeatherMap API fails, WeatherPlugin returns "Unable to get weather"
+* If OpenWeatherMap API fails, TimePlugin defaults to UTC timezone
 
 
 Contributing
